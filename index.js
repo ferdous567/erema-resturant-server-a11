@@ -29,6 +29,9 @@ async function run() {
 
     const foodCollection = client.db('resturantDB').collection('allFood');
     const orderCollection = client.db('resturantDB').collection('order');
+    const addCollection = client.db('resturantDB').collection('addItem');
+
+    // for order item crud
 
     app.get('/order', async(req, res) =>{
       const result = await orderCollection.find().toArray();
@@ -48,6 +51,50 @@ async function run() {
       const result = await orderCollection.deleteOne(query);
       res.send(result);
     })
+
+    // all add item crud
+
+    app.get('/dashboard/additem', async(req, res) =>{
+      const result = await addCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.get('/dashboard/additem/:id', async(req, res) =>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await addCollection.findOne(query);
+      res.send(result);
+    })
+
+    app.put('/dashboard/additem/:id', async(req, res) =>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updateFoodItems = req.body;
+      const foodItems = {
+        $set:{
+
+          name: updateFoodItems.name,
+           photo: updateFoodItems.photo,
+           category:  updateFoodItems.category,
+           price: updateFoodItems.price,
+           quantity: updateFoodItems.quantity,
+           origin: updateFoodItems.origin,
+           desc: updateFoodItems.desc
+         
+        }
+      }
+      const result = await addCollection.updateOne(filter, foodItems);
+      res.send(result);
+    })
+
+    app.post('/dashboard/additem', async(req, res) =>{
+      const addNewFood = req.body;
+      console.log(addNewFood);
+      const result = await addCollection.insertOne(addNewFood);
+      res.send(result);
+    })
+
+    // all food item crud
 
     app.get('/allfood', async(req, res) =>{
       const page = parseInt(req.query.page);
