@@ -28,12 +28,23 @@ async function run() {
     await client.connect();
 
     const foodCollection = client.db('resturantDB').collection('allFood');
+    const orderCollection = client.db('resturantDB').collection('order');
 
+    app.get('/order', async(req, res) =>{
+      const result = await orderCollection.find().toArray();
+      res.send(result)
+    })
+
+    app.post('/order', async(req, res) =>{
+      const orderFoodDetails = req.body;
+      console.log(orderFoodDetails);
+      const result = await orderCollection.insertOne(orderFoodDetails);
+      res.send(result);
+    })
 
     app.get('/allfood', async(req, res) =>{
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
-      console.log('pagination', page, size);
 
 
         const result = await foodCollection.find()
