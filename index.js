@@ -2,12 +2,24 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
+// const jwt = require('jsonwebtoken');
+// const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middlewares
+
+// app.use(cors({
+//   origin:[
+//     // 'http://localhost:5173',
+//     'https://resturant-mgmt-f8dee.web.app/',
+//     'https://resturant-mgmt-f8dee.firebaseapp.com/'
+//   ],
+//   credentials: true
+// }));
 app.use(express.json());
 app.use(cors());
+// app.use(cookieParser());
 
 
 
@@ -25,18 +37,38 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const foodCollection = client.db('resturantDB').collection('allFood');
     const orderCollection = client.db('resturantDB').collection('order');
     const addCollection = client.db('resturantDB').collection('addItem');
     const userCollection = client.db('resturantDB').collection('user');
 
+    // auth related api
+
+    // app.post('/jwt', async(req, res) =>{
+    //   const user = req.body;
+    //   console.log('user for token', user);
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+
+    //   res.cookie('token', token, {
+    //     httpOnly: true,
+    //     secure: true
+    //   })
+    //   .send({success: true});
+    // })
+
+    // app.post('/logout', async(req, res) =>{
+    //   const user = req.body;
+    //   console.log('logging out', user);
+    //   res.clearCookie('token', {maxAge: 0}).send({success: true});
+    // })
+
     // user collection create with post operation
 
     app.post('/user', async (req, res) => {
       const newUser = req.body;
-      console.log(newUser);
+      // console.log(newUser);
       const result = await userCollection.insertOne(newUser);
       res.send(result);
     })
@@ -44,7 +76,13 @@ async function run() {
     // for order item crud
 
     app.get('/order', async (req, res) => {
-      const result = await orderCollection.find().toArray();
+      const email = req.query?.email;
+      // console.log('coooookies eeesss', req.cookies);
+      let query = {};
+      if(email){
+        query = {email: email};
+      }
+      const result = await orderCollection.find(query).toArray();
       res.send(result)
     })
 
@@ -54,6 +92,7 @@ async function run() {
   //  )
 
     app.post('/order', async (req, res) => {
+    
       const orderFoodDetails = req.body;
       const productId = req.query?.productId;
       const productOrder = req.query?.orders;
@@ -72,6 +111,7 @@ async function run() {
     })
 
     app.delete('/order/:id', async (req, res) => {
+
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await orderCollection.deleteOne(query);
@@ -80,10 +120,22 @@ async function run() {
 
     // all add item crud
 
+    // app.get('/additem', async (req, res) => {
+      
+    //   const result = await addCollection.find().toArray();
+    //   res.send(result);
+    // })
     app.get('/additem', async (req, res) => {
-      const result = await addCollection.find().toArray();
+      const email = req.query?.email;
+      // console.log('coooookies', req.cookies);
+      let query = {};
+      if(email){
+        query = {email: email};
+      }
+      const result = await addCollection.find(query).toArray();
       res.send(result);
     })
+
 
     app.get('/additem/:id', async (req, res) => {
       const id = req.params.id;
@@ -95,6 +147,7 @@ async function run() {
 
     // Top selling
     app.get("/top-selling", async (req, res) => {
+      // console.log('coooookies eeesss', req.cookies);
       const foods = await addCollection.find().toArray();
       const sorting =  foods.sort((a,b) => a.orders - b.orders ).reverse();
       console.log(sorting);
