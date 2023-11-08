@@ -30,64 +30,106 @@ async function run() {
     const foodCollection = client.db('resturantDB').collection('allFood');
     const orderCollection = client.db('resturantDB').collection('order');
     const addCollection = client.db('resturantDB').collection('addItem');
+    const userCollection = client.db('resturantDB').collection('user');
+
+    // user collection create with post operation
+
+    app.post('/user', async (req, res) => {
+      const newUser = req.body;
+      console.log(newUser);
+      const result = await userCollection.insertOne(newUser);
+      res.send(result);
+    })
 
     // for order item crud
 
-    app.get('/order', async(req, res) =>{
+    app.get('/order', async (req, res) => {
       const result = await orderCollection.find().toArray();
       res.send(result)
     })
 
-    app.post('/order', async(req, res) =>{
+  //   db.products.updateOne(
+  //     { _id: "abc123" },
+  //     { $inc: { orderCount: 1 } }
+  //  )
+
+    app.post('/order', async (req, res) => {
       const orderFoodDetails = req.body;
+      const productId = req.query?.productId;
+      const productOrder = req.query?.orders;
+      const productFilter = {_id: new ObjectId(productId)};
+      const updateProduct = {
+        $set:{
+          orders:parseInt(productOrder) + 1
+
+        }
+      }
+      await addCollection.updateOne(productFilter, updateProduct);
       console.log(orderFoodDetails);
-      const result = await orderCollection.insertOne(orderFoodDetails);
+      const result = await orderCollection.insertOne(orderFoodDetails)
+      
       res.send(result);
     })
 
-    app.delete('/order/:id', async(req, res) =>{
+    app.delete('/order/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await orderCollection.deleteOne(query);
       res.send(result);
     })
 
     // all add item crud
 
-    app.get('/dashboard/additem', async(req, res) =>{
+    app.get('/additem', async (req, res) => {
       const result = await addCollection.find().toArray();
       res.send(result);
     })
 
-    app.get('/dashboard/additem/:id', async(req, res) =>{
+    app.get('/additem/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await addCollection.findOne(query);
       res.send(result);
     })
 
-    app.put('/dashboard/additem/:id', async(req, res) =>{
+
+    // Top selling
+    app.get("/top-selling", async (req, res) => {
+      const foods = await addCollection.find().toArray();
+      const sorting =  foods.sort((a,b) => a.orders - b.orders ).reverse();
+      console.log(sorting);
+
+      // const resutl = await addCollection.find().aggregate([
+      //   { $unwind: "$addItem" },  
+      //   { $sort: { "addItem.orders": -1 } }  
+      // ]).toArray()
+
+      res.send(sorting)
+    })
+
+    app.put('/additem/:id', async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
       const updateFoodItems = req.body;
       const foodItems = {
-        $set:{
+        $set: {
 
           name: updateFoodItems.name,
-           photo: updateFoodItems.photo,
-           category:  updateFoodItems.category,
-           price: updateFoodItems.price,
-           quantity: updateFoodItems.quantity,
-           origin: updateFoodItems.origin,
-           desc: updateFoodItems.desc
-         
+          photo: updateFoodItems.photo,
+          category: updateFoodItems.category,
+          price: updateFoodItems.price,
+          quantity: updateFoodItems.quantity,
+          origin: updateFoodItems.origin,
+          desc: updateFoodItems.desc
+
         }
+        
       }
       const result = await addCollection.updateOne(filter, foodItems);
       res.send(result);
     })
 
-    app.post('/dashboard/additem', async(req, res) =>{
+    app.post('/additem', async (req, res) => {
       const addNewFood = req.body;
       console.log(addNewFood);
       const result = await addCollection.insertOne(addNewFood);
@@ -96,29 +138,29 @@ async function run() {
 
     // all food item crud
 
-    app.get('/allfood', async(req, res) =>{
+    app.get('/allfood', async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
 
 
-        const result = await foodCollection.find()
+      const result = await addCollection.find()
         .skip(page * size)
         .limit(size)
         .toArray();
-        
-        res.send(result);
+
+      res.send(result);
     })
 
-    app.get('/allFoodCount', async(req, res) =>{
-      const count = await foodCollection.estimatedDocumentCount();
-      res.send({count});
+    app.get('/allFoodCount', async (req, res) => {
+      const count = await addCollection.estimatedDocumentCount();
+      res.send({ count });
     })
 
-    app.get('/allfood/:id', async(req, res) =>{
-        const id = req.params.id;
-        const query = {_id: new ObjectId(id)};
-        const result = await foodCollection.findOne(query);
-        res.send(result);
+    app.get('/allfood/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await addCollection.findOne(query);
+      res.send(result);
     })
 
     // Send a ping to confirm a successful connection
@@ -132,10 +174,10 @@ async function run() {
 run().catch(console.dir);
 
 
-app.get('/', (req, res) =>{
-    res.send('Resturant management website server is continued..')
+app.get('/', (req, res) => {
+  res.send('Resturant management website server is continued..')
 })
 
-app.listen(port, () =>{
-    console.log(`Resturant mgmt is running on port: ${port}`)
+app.listen(port, () => {
+  console.log(`Resturant mgmt is running on port: ${port}`)
 })
