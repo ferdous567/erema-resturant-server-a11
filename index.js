@@ -2,24 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
-// const jwt = require('jsonwebtoken');
-// const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 5000;
 
-// middlewares
 
-// app.use(cors({
-//   origin:[
-//     // 'http://localhost:5173',
-//     'https://resturant-mgmt-f8dee.web.app/',
-//     'https://resturant-mgmt-f8dee.firebaseapp.com/'
-//   ],
-//   credentials: true
-// }));
 app.use(express.json());
 app.use(cors());
-// app.use(cookieParser());
+
 
 
 
