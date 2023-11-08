@@ -33,25 +33,7 @@ async function run() {
     const addCollection = client.db('resturantDB').collection('addItem');
     const userCollection = client.db('resturantDB').collection('user');
 
-    // auth related api
-
-    // app.post('/jwt', async(req, res) =>{
-    //   const user = req.body;
-    //   console.log('user for token', user);
-    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
-
-    //   res.cookie('token', token, {
-    //     httpOnly: true,
-    //     secure: true
-    //   })
-    //   .send({success: true});
-    // })
-
-    // app.post('/logout', async(req, res) =>{
-    //   const user = req.body;
-    //   console.log('logging out', user);
-    //   res.clearCookie('token', {maxAge: 0}).send({success: true});
-    // })
+  
 
     // user collection create with post operation
 
@@ -75,10 +57,7 @@ async function run() {
       res.send(result)
     })
 
-  //   db.products.updateOne(
-  //     { _id: "abc123" },
-  //     { $inc: { orderCount: 1 } }
-  //  )
+  
 
     app.post('/order', async (req, res) => {
     
@@ -107,13 +86,7 @@ async function run() {
       res.send(result);
     })
 
-    // all add item crud
-
-    // app.get('/additem', async (req, res) => {
-      
-    //   const result = await addCollection.find().toArray();
-    //   res.send(result);
-    // })
+   
     app.get('/additem', async (req, res) => {
       const email = req.query?.email;
       // console.log('coooookies', req.cookies);
@@ -141,10 +114,7 @@ async function run() {
       const sorting =  foods.sort((a,b) => a.orders - b.orders ).reverse();
       console.log(sorting);
 
-      // const resutl = await addCollection.find().aggregate([
-      //   { $unwind: "$addItem" },  
-      //   { $sort: { "addItem.orders": -1 } }  
-      // ]).toArray()
+    
 
       res.send(sorting)
     })
